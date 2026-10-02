@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # --- Constants ---
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:8001"
 
 # --- Session State ---
 if "session_id" not in st.session_state:
