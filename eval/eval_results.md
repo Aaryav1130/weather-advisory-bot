@@ -1,11 +1,5 @@
 # Evaluation Results
 
-**Run date:** 2026-10-02 at 23:29 IST  
-**Model:** `qwen/qwen3.8-27b` (via Groq)  
-**Weather API:** Open-Meteo (live data, no mocking)  
-
----
-
 ## Summary: 2 / 8 passed
 
 | # | Category | Test Name | Result | Root Cause |
