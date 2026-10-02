@@ -1,0 +1,314 @@
+# =============================================================================
+# Weather Advisory Bot - Standard Operating Procedures (SOPs)
+# =============================================================================
+# Format: YAML chosen because it's human-readable, machine-parseable, and
+# allows non-technical team members to add/edit policies without touching code.
+#
+# To add a new SOP: simply append a new entry below following the same schema.
+# No code changes required — the system dynamically loads all SOPs at startup.
+# =============================================================================
+
+metadata:
+  version: "1.0"
+  last_updated: "2026-10-02"
+  description: >
+    Policy rules governing the Weather Advisory Support Bot's responses.
+    Every piece of advice the bot gives must be traceable to one of these SOPs.
+    If no SOP applies, the bot must explicitly say so rather than guessing.
+
+sops:
+  # ---------------------------------------------------------------------------
+  # CATEGORY 1: Outdoor Exercise Safety
+  # ---------------------------------------------------------------------------
+  - id: "SOP-001"
+    name: "High UV Exercise Warning"
+    category: "outdoor_exercise"
+    severity: "moderate"
+    description: "Warns against prolonged unprotected outdoor exercise during high UV periods."
+    condition:
+      parameter: "uv_index"
+      operator: ">="
+      threshold: 8
+      time_window: "10:00-16:00"
+      activity_keywords:
+        - "exercise"
+        - "run"
+        - "running"
+        - "jog"
+        - "jogging"
+        - "walk"
+        - "walking"
+        - "workout"
+        - "outdoor"
+        - "sport"
+        - "play"
+        - "hike"
+        - "hiking"
+        - "trek"
+        - "trekking"
+    guidance: >
+      The UV index is currently {uv_index}, which is considered very high.
+      Avoid prolonged unprotected outdoor exercise between 10 AM and 4 PM.
+      If you must go out, apply SPF 50+ sunscreen, wear a hat and UV-protective clothing,
+      and consider rescheduling to early morning (before 10 AM) or evening (after 5 PM).
+
+  - id: "SOP-002"
+    name: "Heavy Rain Cycling/Biking Risk"
+    category: "outdoor_exercise"
+    severity: "high"
+    description: "Flags safety risk for cycling or biking during heavy rain."
+    condition:
+      parameters:
+        - parameter: "precipitation"
+          operator: ">"
+          threshold: 5.0
+          unit: "mm/h"
+        - parameter: "precipitation_probability"
+          operator: ">="
+          threshold: 80
+          unit: "%"
+      logic: "OR"
+      activity_keywords:
+        - "cycle"
+        - "cycling"
+        - "bike"
+        - "biking"
+        - "bicycle"
+        - "two-wheeler"
+        - "scooter"
+        - "motorbike"
+        - "motorcycle"
+        - "ride"
+    guidance: >
+      Current conditions show {precipitation}mm precipitation with {precipitation_probability}%
+      chance of rain. Cycling or riding a two-wheeler in these conditions poses a
+      significant safety risk due to reduced visibility, slippery roads, and impaired braking.
+      Strongly recommend postponing your ride or using enclosed transportation.
+
+  - id: "SOP-003"
+    name: "Extreme Heat Exercise Ban"
+    category: "outdoor_exercise"
+    severity: "critical"
+    description: "Advises against any outdoor exercise during extreme heat."
+    condition:
+      parameter: "temperature_2m"
+      operator: ">="
+      threshold: 42
+      unit: "°C"
+    guidance: >
+      The temperature is currently {temperature_2m}°C, which is dangerously high.
+      All outdoor exercise should be avoided. Risk of heatstroke, dehydration, and
+      heat exhaustion is severe. Stay indoors in a cool environment, drink plenty
+      of water, and reschedule any outdoor activities to cooler hours or another day.
+
+  - id: "SOP-004"
+    name: "Strong Wind Two-Wheeler Safety"
+    category: "outdoor_exercise"
+    severity: "high"
+    description: "Flags safety risk for two-wheelers and cyclists in strong winds."
+    condition:
+      parameter: "wind_speed_10m"
+      operator: ">"
+      threshold: 40
+      unit: "km/h"
+      activity_keywords:
+        - "cycle"
+        - "cycling"
+        - "bike"
+        - "biking"
+        - "bicycle"
+        - "two-wheeler"
+        - "scooter"
+        - "motorbike"
+        - "motorcycle"
+        - "ride"
+    guidance: >
+      Wind speeds are currently {wind_speed_10m} km/h with gusts up to {wind_gusts_10m} km/h.
+      This is a safety risk for cyclists and two-wheeler riders, not just a comfort issue.
+      Strong crosswinds can cause loss of control, especially on open roads or bridges.
+      Use enclosed transportation or wait for winds to subside.
+
+  # ---------------------------------------------------------------------------
+  # CATEGORY 2: Travel Safety
+  # ---------------------------------------------------------------------------
+  - id: "SOP-005"
+    name: "Rain Travel Delay Warning"
+    category: "travel"
+    severity: "moderate"
+    description: "Warns travelers about possible delays due to rain."
+    condition:
+      parameter: "precipitation_probability"
+      operator: ">="
+      threshold: 70
+      unit: "%"
+      activity_keywords:
+        - "travel"
+        - "commute"
+        - "drive"
+        - "driving"
+        - "road trip"
+        - "journey"
+        - "trip"
+        - "go to"
+        - "heading to"
+        - "flight"
+        - "train"
+    guidance: >
+      There is a {precipitation_probability}% probability of precipitation.
+      Travel may be subject to delays. Check local traffic and transport alerts
+      before departure, allow extra travel time, and ensure your vehicle's
+      wipers and lights are in working order.
+
+  - id: "SOP-006"
+    name: "Low Visibility Driving Advisory"
+    category: "travel"
+    severity: "high"
+    description: "Advises caution for driving in low-visibility conditions."
+    condition:
+      parameters:
+        - parameter: "precipitation"
+          operator: ">"
+          threshold: 10.0
+          unit: "mm/h"
+        - parameter: "wind_speed_10m"
+          operator: ">"
+          threshold: 50
+          unit: "km/h"
+      logic: "OR"
+    guidance: >
+      Current conditions indicate severely reduced visibility:
+      precipitation at {precipitation}mm/h and wind at {wind_speed_10m} km/h.
+      If driving is unavoidable, reduce speed significantly, use low-beam headlights,
+      maintain a large following distance, and avoid overtaking.
+      Consider postponing non-essential travel.
+
+  - id: "SOP-007"
+    name: "Severe Weather System Travel Ban"
+    category: "travel"
+    severity: "critical"
+    description: "Strongly advises against all travel during severe weather systems."
+    condition:
+      parameters:
+        - parameter: "precipitation"
+          operator: ">"
+          threshold: 20.0
+          unit: "mm/h"
+        - parameter: "wind_speed_10m"
+          operator: ">"
+          threshold: 60
+          unit: "km/h"
+      logic: "AND"
+    guidance: >
+      A severe weather system is affecting the area with {precipitation}mm/h
+      precipitation and {wind_speed_10m} km/h winds (gusts up to {wind_gusts_10m} km/h).
+      All non-essential travel should be cancelled. Road flooding, fallen trees,
+      and power outages are likely. Stay indoors and monitor local emergency alerts.
+      This is a safety-critical situation.
+
+  # ---------------------------------------------------------------------------
+  # CATEGORY 3: Vulnerable Groups (Children, Elderly, Pets)
+  # ---------------------------------------------------------------------------
+  - id: "SOP-008"
+    name: "Child & Elderly Heat Advisory"
+    category: "vulnerable_groups"
+    severity: "moderate"
+    description: "Special heat precautions for children and elderly."
+    condition:
+      parameter: "temperature_2m"
+      operator: ">="
+      threshold: 35
+      unit: "°C"
+      activity_keywords:
+        - "child"
+        - "children"
+        - "kid"
+        - "kids"
+        - "toddler"
+        - "baby"
+        - "infant"
+        - "elderly"
+        - "senior"
+        - "old"
+        - "grandparent"
+        - "grandmother"
+        - "grandfather"
+        - "aged"
+        - "parent"
+    guidance: >
+      The temperature is {temperature_2m}°C (feels like {apparent_temperature}°C).
+      Children and elderly individuals are at higher risk of heat-related illness.
+      Keep them indoors during peak heat (11 AM - 4 PM), ensure frequent hydration,
+      dress in light loose clothing, and never leave them in parked vehicles.
+      Watch for signs of heat exhaustion: excessive sweating, weakness, nausea.
+
+  - id: "SOP-009"
+    name: "Pet Outdoor Heat Warning"
+    category: "vulnerable_groups"
+    severity: "high"
+    description: "Warns about hot pavement danger for pets."
+    condition:
+      parameter: "temperature_2m"
+      operator: ">="
+      threshold: 35
+      unit: "°C"
+      activity_keywords:
+        - "pet"
+        - "dog"
+        - "puppy"
+        - "cat"
+        - "walk the dog"
+        - "dog walk"
+        - "pet walk"
+        - "take out"
+        - "animal"
+    guidance: >
+      The temperature is {temperature_2m}°C. At this temperature, pavement and asphalt
+      can reach 60°C+, which can burn your pet's paws in under a minute.
+      Walk pets only during early morning (before 8 AM) or late evening (after 7 PM).
+      Test pavement with the back of your hand — if you can't hold it for 5 seconds,
+      it's too hot for paws. Always carry water for your pet.
+
+  # ---------------------------------------------------------------------------
+  # CATEGORY 4: General Outdoor Leisure (includes fuzzy/non-numeric SOP)
+  # ---------------------------------------------------------------------------
+  - id: "SOP-010"
+    name: "Outdoor Leisure & Picnic Comfort Assessment"
+    category: "outdoor_leisure"
+    severity: "advisory"
+    description: >
+      Holistic comfort assessment for general outdoor leisure activities like picnics,
+      park visits, and outdoor dining. This SOP does NOT rely on a single numeric
+      threshold — it requires evaluating multiple weather factors together to give
+      a comfort-level recommendation.
+    condition:
+      type: "holistic"
+      description: >
+        Evaluate the combination of: temperature comfort (18-32°C ideal),
+        precipitation probability (< 30% preferred), wind speed (< 25 km/h comfortable),
+        UV index (< 6 comfortable), and overall weather code. No single factor
+        is decisive — the overall picture determines the recommendation.
+      activity_keywords:
+        - "picnic"
+        - "park"
+        - "outdoor dining"
+        - "barbecue"
+        - "bbq"
+        - "garden"
+        - "beach"
+        - "leisure"
+        - "outing"
+        - "outdoor event"
+        - "good day"
+        - "nice day"
+        - "pleasant"
+        - "enjoy outside"
+        - "hang out"
+        - "get together"
+    guidance: >
+      Based on current conditions — temperature {temperature_2m}°C
+      (feels like {apparent_temperature}°C), {precipitation_probability}% chance of rain,
+      wind at {wind_speed_10m} km/h, and UV index {uv_index} — here is the
+      overall comfort assessment for your outdoor plans.
+      [The LLM should synthesize these factors into a nuanced recommendation,
+      considering that e.g. 28°C with light breeze and no rain is lovely,
+      while 28°C with 80% rain chance and gusty winds is not.]
