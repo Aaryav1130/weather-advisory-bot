@@ -74,7 +74,7 @@ if "debug_info" not in st.session_state:
 
 # --- Header ---
 st.markdown('<h1 class="custom-title">Weather Advisory Bot</h1>', unsafe_allow_html=True)
-st.markdown('<p class="signature">Engineered by Aaryav for MediBuddy Brainwave</p>', unsafe_allow_html=True)
+st.markdown('<p class="signature">MediBuddy Brainwave AI Product Engineering Internship</p>', unsafe_allow_html=True)
 
 st.markdown(
     "Ask me about outdoor activity safety anywhere in the world. "
@@ -84,12 +84,9 @@ st.divider()
 
 # --- Sidebar ---
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/1200px-GitHub_Invertocat_Logo.svg.png", width=40)
     st.header("Project Details")
     st.markdown(
         """
-        **Built by Aaryav**
-        
         This agent evaluates outdoor activity safety using:
         - **Live Open-Meteo Data** (Geocoding & Forecast)
         - **10 Custom SOPs** (Standard Operating Procedures)
