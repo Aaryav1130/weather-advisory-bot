@@ -1,12 +1,19 @@
 """
-🌤️ Weather Advisory Support Bot
+Weather Advisory Support Bot
 A safety-first outdoor activity advisor powered by live weather data and SOPs.
-Built by Aaryav for the MediBuddy Brainwave AI Product Engineering Internship.
 """
 
+import asyncio
+import sys
+import os
 import uuid
-import requests
 import streamlit as st
+
+# Add project root to path so imports work on Streamlit Cloud
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.config import settings
+from app.graph import agent
 
 # --- Page Config ---
 st.set_page_config(
@@ -15,7 +22,7 @@ st.set_page_config(
     layout="centered",
 )
 
-# --- Custom CSS to make it unique ---
+# --- Custom CSS ---
 st.markdown("""
     <style>
     /* Hide Streamlit branding */
@@ -23,12 +30,12 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Reduce top paddings to pull content up */
+    /* Reduce top paddings */
     .block-container {
         padding-top: 2rem !important;
     }
     
-    /* Aggressively pull sidebar content up */
+    /* Pull sidebar content up */
     [data-testid="stSidebar"] {
         padding-top: 0rem !important;
     }
@@ -37,7 +44,6 @@ st.markdown("""
         padding-top: 0rem !important;
     }
     
-    /* Adjust sidebar emoji margin */
     .sidebar-emoji {
         text-align: center; 
         font-size: 4rem; 
@@ -55,7 +61,7 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     
-    /* Custom button styling */
+    /* Button styling */
     .stButton>button {
         background-color: #f8fafc;
         color: #0f172a;
@@ -72,7 +78,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Constants ---
-API_URL = "http://localhost:8001"
 BOT_AVATAR = "🌤️"
 USER_AVATAR = "👤"
 
@@ -85,6 +90,50 @@ if "messages" not in st.session_state:
 
 if "debug_info" not in st.session_state:
     st.session_state.debug_info = []
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+
+# --- Helper: run the LangGraph agent directly ---
+def run_agent(user_message: str) -> dict:
+    """Invoke the LangGraph agent directly (no FastAPI needed)."""
+    try:
+        result = asyncio.run(agent.ainvoke({
+            "user_query": user_message,
+            "messages": st.session_state.chat_history,
+            "location_name": "",
+            "activity": "",
+            "location": None,
+            "weather_data": None,
+            "weather_summary": "",
+            "matched_sops": [],
+            "response": "",
+            "error": "",
+        }))
+
+        # Update chat history for session memory
+        st.session_state.chat_history = result.get("messages", [])
+
+        return {
+            "response": result.get("response", "Sorry, something went wrong."),
+            "matched_sops": result.get("matched_sops", []),
+            "location": result.get("location"),
+            "weather_summary": result.get("weather_summary", ""),
+            "error": result.get("error", ""),
+        }
+
+    except Exception as e:
+        return {
+            "response": (
+                "I'm sorry, I encountered an unexpected error processing your request. "
+                "Please try again in a moment."
+            ),
+            "matched_sops": [],
+            "location": None,
+            "weather_summary": "",
+            "error": str(e),
+        }
 
 
 # --- Header ---
@@ -121,14 +170,10 @@ with st.sidebar:
     )
 
     if st.button("🔄 Start Fresh Conversation", use_container_width=True):
-        # Reset session
-        try:
-            requests.post(f"{API_URL}/reset/{st.session_state.session_id}")
-        except Exception:
-            pass
         st.session_state.session_id = str(uuid.uuid4())
         st.session_state.messages = []
         st.session_state.debug_info = []
+        st.session_state.chat_history = []
         st.rerun()
 
     show_debug = st.checkbox("🐞 Enable Developer Debug Mode", value=False)
@@ -182,68 +227,29 @@ if user_input := st.chat_input("Enter your location and activity..."):
     with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(user_input)
 
-    # Send to backend
+    # Run the LangGraph agent directly
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("Analyzing weather and scanning policies..."):
-            try:
-                response = requests.post(
-                    f"{API_URL}/chat",
-                    json={
-                        "message": user_input,
-                        "session_id": st.session_state.session_id,
-                    },
-                    timeout=30,
+            data = run_agent(user_input)
+            bot_response = data["response"]
+            st.markdown(bot_response)
+
+            # Save to history
+            st.session_state.messages.append(
+                {"role": "assistant", "content": bot_response}
+            )
+
+            # Save debug info
+            st.session_state.debug_info.append(
+                {
+                    "location": data.get("location"),
+                    "weather_summary": data.get("weather_summary", ""),
+                    "matched_sops": data.get("matched_sops", []),
+                    "error": data.get("error", ""),
+                }
+            )
+            # Pad debug_info for user messages
+            while len(st.session_state.debug_info) < len(st.session_state.messages):
+                st.session_state.debug_info.insert(
+                    len(st.session_state.debug_info) - 1, None
                 )
-
-                if response.status_code == 200:
-                    data = response.json()
-                    bot_response = data.get("response", "Sorry, something went wrong.")
-                    st.markdown(bot_response)
-
-                    # Save to history
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": bot_response}
-                    )
-
-                    # Save debug info
-                    st.session_state.debug_info.append(
-                        {
-                            "location": data.get("location"),
-                            "weather_summary": data.get("weather_summary", ""),
-                            "matched_sops": data.get("matched_sops", []),
-                            "error": data.get("error", ""),
-                        }
-                    )
-                    # Pad debug_info for user messages
-                    while len(st.session_state.debug_info) < len(st.session_state.messages):
-                        st.session_state.debug_info.insert(
-                            len(st.session_state.debug_info) - 1, None
-                        )
-                else:
-                    error_msg = "⚠️ Server returned an error. Please check backend logs."
-                    st.error(error_msg)
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": error_msg}
-                    )
-                    st.session_state.debug_info.append(None)
-
-            except requests.exceptions.ConnectionError:
-                error_msg = (
-                    "⚠️ Connection refused. "
-                    "Make sure the FastAPI backend is running on port 8001: "
-                    "`python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload`"
-                )
-                st.error(error_msg)
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": error_msg}
-                )
-                st.session_state.debug_info.append(None)
-
-            except requests.exceptions.Timeout:
-                error_msg = "⚠️ Request timed out. The LLM might be taking too long to respond."
-                st.error(error_msg)
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": error_msg}
-                )
-                st.session_state.debug_info.append(None)
-

@@ -6,12 +6,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _get_secret(key: str, default: str = "") -> str:
+    """Get a config value from env vars first, then Streamlit secrets as fallback."""
+    val = os.getenv(key, "")
+    if val:
+        return val
+    try:
+        import streamlit as st
+        return st.secrets.get(key, default)
+    except Exception:
+        return default
+
+
 class Settings:
     """Central configuration for the Weather Advisory Bot."""
 
     # Groq LLM settings
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    MODEL_NAME: str = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
+    GROQ_API_KEY: str = _get_secret("GROQ_API_KEY")
+    MODEL_NAME: str = _get_secret("MODEL_NAME", "qwen/qwen3.8-27b")
 
     # Open-Meteo API endpoints (free, no key required)
     WEATHER_API_URL: str = "https://api.open-meteo.com/v1/forecast"
