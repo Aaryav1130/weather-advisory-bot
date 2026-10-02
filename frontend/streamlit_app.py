@@ -27,15 +27,21 @@ st.markdown("""
     .block-container {
         padding-top: 2rem !important;
     }
-    section[data-testid="stSidebar"] > div {
-        padding-top: 1rem !important;
+    
+    /* Aggressively pull sidebar content up */
+    [data-testid="stSidebar"] {
+        padding-top: 0rem !important;
+    }
+    
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 0rem !important;
     }
     
     /* Adjust sidebar emoji margin */
     .sidebar-emoji {
         text-align: center; 
         font-size: 4rem; 
-        margin-top: -2rem;
+        margin-top: -6rem;
         margin-bottom: -1rem;
     }
     
