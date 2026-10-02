@@ -74,7 +74,6 @@ if "debug_info" not in st.session_state:
 
 # --- Header ---
 st.markdown('<h1 class="custom-title">Weather Advisory Bot</h1>', unsafe_allow_html=True)
-st.markdown('<p class="signature">MediBuddy Brainwave AI Product Engineering Internship</p>', unsafe_allow_html=True)
 
 st.markdown(
     "Ask me about outdoor activity safety anywhere in the world. "
@@ -84,6 +83,7 @@ st.divider()
 
 # --- Sidebar ---
 with st.sidebar:
+    st.markdown("<h1 style='text-align: center; font-size: 3rem;'>⛅🌦️</h1>", unsafe_allow_html=True)
     st.header("Project Details")
     st.markdown(
         """
