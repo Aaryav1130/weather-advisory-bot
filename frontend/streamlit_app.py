@@ -23,21 +23,30 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
+    /* Reduce top paddings to pull content up */
+    .block-container {
+        padding-top: 2rem !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        padding-top: 1rem !important;
+    }
+    
+    /* Adjust sidebar emoji margin */
+    .sidebar-emoji {
+        text-align: center; 
+        font-size: 4rem; 
+        margin-top: -2rem;
+        margin-bottom: -1rem;
+    }
+    
     /* Custom Title */
     .custom-title {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         color: #1e3a8a;
         font-weight: 800;
-        font-size: 2.5rem;
-        margin-bottom: 0rem;
-    }
-    
-    /* Signature/Subtitle */
-    .signature {
-        font-size: 0.9rem;
-        color: #64748b;
-        font-style: italic;
-        margin-bottom: 2rem;
+        font-size: 2.8rem;
+        margin-top: -2rem;
+        margin-bottom: 1rem;
     }
     
     /* Custom button styling */
@@ -83,7 +92,7 @@ st.divider()
 
 # --- Sidebar ---
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; font-size: 3rem;'>⛅🌦️</h1>", unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-emoji">⛅🌦️</div>', unsafe_allow_html=True)
     st.header("Project Details")
     st.markdown(
         """
